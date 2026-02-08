@@ -59,6 +59,8 @@ To set up security:
 3. Set `FERNET_KEY` in `.env` to the generated key
 Environment variables are loaded using python-dotenv, with no hardcoded secrets.
 
+Data is encrypted at rest: author_description is encrypted using Fernet before storage. Optionally, quote_text can also be encrypted.
+
 ## Outputs
 
 Processed records are saved to JSONL files in the output directory, including metadata:
