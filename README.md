@@ -22,7 +22,11 @@ Describe the data flow here.
 
 ## Scraping Details
 
-Details about scraping from https://quotes.toscrape.com.
+Scraping is performed from https://quotes.toscrape.com using a custom HTTP client with:
+- User-Agent header for polite scraping
+- Configurable timeouts (default 10 seconds)
+- Exponential backoff retries for timeouts and 5xx errors (up to 3 retries)
+- Proper error handling for 4xx client errors (raising FetchError except for 429 Too Many Requests)
 
 ## Enrichment (Author Pages)
 
