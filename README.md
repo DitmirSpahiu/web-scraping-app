@@ -69,6 +69,10 @@ Processed records are saved to JSONL files in the output directory, including me
 
 Invalid records (failing validation for required fields: quote_text, author_name, author_url) are saved to a separate JSONL file with error details and the original record.
 
+Output files:
+- `data/processed/quotes.jsonl`: Valid processed quotes in JSONL format
+- `data/processed/invalid.jsonl`: Invalid records with errors in JSONL format
+
 ## How to Run
 
 Steps to run the pipeline.
