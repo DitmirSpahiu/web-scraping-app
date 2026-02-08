@@ -37,7 +37,14 @@ From list pages, the following fields are extracted for each quote:
 
 ## Enrichment (Author Pages)
 
-Details about enriching with author details.
+Author pages are visited to enrich quotes with additional author details. The following fields are extracted:
+- author_name: The author's full name
+- author_birth_date: Birth date (if available)
+- author_birth_location: Birth location (if available)
+- author_description: Biographical description
+- author_url: The URL of the author page
+
+Missing fields are set to None and logged as warnings.
 
 ## Security
 
