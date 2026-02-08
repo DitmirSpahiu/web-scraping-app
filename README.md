@@ -52,7 +52,12 @@ Missing fields are set to None and logged as warnings.
 
 ## Security
 
-Security measures including Fernet encryption and SHA-256 hashing.
+Security measures include Fernet encryption and SHA-256 hashing.
+To set up security:
+1. Copy `.env.example` to `.env`
+2. Generate a Fernet key: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
+3. Set `FERNET_KEY` in `.env` to the generated key
+Environment variables are loaded using python-dotenv, with no hardcoded secrets.
 
 ## Outputs
 
