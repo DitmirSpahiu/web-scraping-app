@@ -28,6 +28,13 @@ Scraping is performed from https://quotes.toscrape.com using a custom HTTP clien
 - Exponential backoff retries for timeouts and 5xx errors (up to 3 retries)
 - Proper error handling for 4xx client errors (raising FetchError except for 429 Too Many Requests)
 
+From list pages, the following fields are extracted for each quote:
+- quote_text: The quote content (curly quotes stripped)
+- author_name: The author's name
+- tags: List of associated tags
+- author_url: Absolute URL to the author's detail page
+- page_url: The URL of the page where the quote was found
+
 ## Enrichment (Author Pages)
 
 Details about enriching with author details.
