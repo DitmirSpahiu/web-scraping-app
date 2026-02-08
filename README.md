@@ -20,7 +20,7 @@ Describe the modular architecture here.
 
 Data flows through the following stages:
 1. Scraping: Fetch quotes list pages and author detail pages
-2. Processing: Clean and normalize extracted data (whitespace normalization for text fields, lowercase unique tags, URL cleaning)
+2. Processing: Clean and normalize extracted data (whitespace normalization for text fields, lowercase unique tags, URL cleaning), then validate records for required fields (quote_text, author_name, author_url)
 3. Enrichment: Merge author details into quote records
 4. Storage: Save processed records to JSONL files
 
@@ -56,7 +56,8 @@ Security measures including Fernet encryption and SHA-256 hashing.
 
 ## Outputs
 
-JSONL files for processed records and invalid records.
+Processed records are saved to JSONL files in the output directory.
+Invalid records (failing validation for required fields: quote_text, author_name, author_url) are saved to a separate JSONL file with error details and the original record.
 
 ## How to Run
 
