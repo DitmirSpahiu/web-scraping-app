@@ -16,9 +16,9 @@ from src.storage.repository import save_jsonl
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description='Run the QuoteHarvester pipeline')
-    parser.add_argument('--max-pages', type=int, default=3, help='Maximum number of pages to scrape')
-    parser.add_argument('--output-dir', type=str, default=OUTPUT_DIR, help='Output directory for files')
+    parser = argparse.ArgumentParser(description='Run the QuoteHarvester data pipeline: scrape quotes, enrich with author details, process, and save to JSONL files.')
+    parser.add_argument('--max-pages', type=int, default=3, help='Maximum number of quote list pages to scrape from https://quotes.toscrape.com (default: 3)')
+    parser.add_argument('--output-dir', type=str, default=OUTPUT_DIR, help='Directory to save processed quotes.jsonl and invalid.jsonl files (default: data/processed)')
     args = parser.parse_args()
 
     setup_logging()
@@ -41,8 +41,8 @@ def main() -> None:
             page_url = find_next_page_url(html, page_url)
             pages_scraped += 1
         except Exception as e:
-            logger.error(f"Failed to scrape {page_url}: {e}")
-            break
+            logger.error(f"Failed to scrape {page_url}: {e}, skipping to next page if available")
+            page_url = None  # Stop scraping on failure to avoid infinite loops
 
     logger.info(f"Pages scraped: {pages_scraped}, Quotes parsed: {len(all_quotes)}")
 
@@ -57,7 +57,7 @@ def main() -> None:
             author_cache[url] = author_data
             authors_fetched += 1
         except Exception as e:
-            logger.error(f"Failed to fetch author {url}: {e}")
+            logger.warning(f"Failed to fetch author {url}: {e}, setting author fields to None")
             author_cache[url] = {}
 
     logger.info(f"Authors fetched: {authors_fetched}")
