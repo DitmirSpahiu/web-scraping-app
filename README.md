@@ -14,72 +14,60 @@ Environment variables (optional, defaults provided):
 
 ## Architecture
 
-Describe the modular architecture here.
+The project follows a modular architecture with the following components:
+
+- **Scraping**: Handles HTTP requests, HTML parsing for quotes and author pages
+- **Processing**: Cleans, validates, transforms, and deduplicates data
+- **Security**: Manages encryption, hashing, and environment secrets
+- **Storage**: Provides atomic JSONL file writing
+- **Pipeline**: Orchestrates the end-to-end data flow with CLI interface
 
 ## Data Flow
 
-Data flows through the following stages:
-1. Scraping: Fetch quotes list pages and author detail pages
-2. Processing: Clean and normalize extracted data, validate records, transform by adding metadata (record_id: SHA-256 hash of quote_text + author_name, ingested_at: UTC ISO timestamp), and deduplicate by record_id
-3. Enrichment: Merge author details into quote records
-4. Storage: Save processed records to JSONL files
+Data flows through the following numbered stages:
+
+1. **Scraping**: Iterate through list pages using "Next" links, parse quotes with CSS selectors (e.g., div.quote, span.text, small.author)
+2. **Enrichment**: Fetch unique author pages once (cached), merge author details into quote records
+3. **Processing**: Clean whitespace/tags, validate required fields, add metadata (record_id, ingested_at), deduplicate
+4. **Security**: Encrypt sensitive fields (author_description) using Fernet
+5. **Storage**: Save valid records to quotes.jsonl, invalid to invalid.jsonl atomically
 
 ## Scraping Details
 
-Scraping is performed from https://quotes.toscrape.com using a custom HTTP client with:
-- User-Agent header for polite scraping
-- Configurable timeouts (default 10 seconds)
-- Exponential backoff retries for timeouts and 5xx errors (up to 3 retries)
-- Proper error handling for 4xx client errors (raising FetchError except for 429 Too Many Requests)
+Scraping uses CSS selectors for robust parsing:
+- Quotes: `div.quote` containers
+- Text: `span.text`
+- Author: `small.author`
+- Tags: `div.tags a.tag`
+- Author URL: `a` with href
+- Next page: `li.next a`
 
-From list pages, the following fields are extracted for each quote:
-- quote_text: The quote content (curly quotes stripped)
-- author_name: The author's name
-- tags: List of associated tags
-- author_url: Absolute URL to the author's detail page
-- page_url: The URL of the page where the quote was found
+Resilience: Custom HTTP client with User-Agent, timeouts, exponential backoff retries for 5xx/429, graceful error handling for 4xx (except 429).
 
 ## Enrichment (Author Pages)
 
-Author pages are visited to enrich quotes with additional author details. The following fields are extracted:
-- author_name: The author's full name
-- author_birth_date: Birth date (if available)
-- author_birth_location: Birth location (if available)
-- author_description: Biographical description
-- author_url: The URL of the author page
-
-Missing fields are set to None and logged as warnings.
+Author pages are cached per unique URL to avoid redundant fetches. Merged fields include:
+- author_birth_date
+- author_birth_location
+- author_description
 
 ## Security
 
-Security measures include Fernet encryption and SHA-256 hashing.
-To set up security:
-1. Copy `.env.example` to `.env`
-2. Generate a Fernet key: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
-3. Set `FERNET_KEY` in `.env` to the generated key
-Environment variables are loaded using python-dotenv, with no hardcoded secrets.
+Environment-based key management: FERNET_KEY loaded from .env via python-dotenv. No hardcoded secrets.
 
-Data is encrypted at rest: author_description is encrypted using Fernet before storage. Optionally, quote_text can also be encrypted.
+Encrypted at rest: author_description field encrypted with Fernet before storage.
 
 ## Outputs
 
-Processed records are saved to JSONL files in the output directory, including metadata:
-- record_id: Unique SHA-256 hash of quote_text + author_name for deduplication
-- ingested_at: UTC ISO timestamp of when the record was processed
-
-Invalid records (failing validation for required fields: quote_text, author_name, author_url) are saved to a separate JSONL file with error details and the original record.
-
-Output files:
-- `data/processed/quotes.jsonl`: Valid processed quotes in JSONL format
-- `data/processed/invalid.jsonl`: Invalid records with errors in JSONL format
+- `data/processed/quotes.jsonl`: Valid records, e.g., `{"quote_text":"Test","author_name":"Author","record_id":"abc123","ingested_at":"2026-02-08T12:00:00"}`
+- `data/processed/invalid.jsonl`: Invalid records, e.g., `{"errors":["Missing author_name"],"record":{"quote_text":"Test"}}`
 
 ## How to Run
 
-1. Set up the environment: Copy `.env.example` to `.env` and set `FERNET_KEY`
-2. Install dependencies: `pip install -r requirements.txt`
-3. Run the pipeline: `python -m src.pipeline.run --max-pages 5 --output-dir data/processed`
-
-The pipeline scrapes quotes from https://quotes.toscrape.com, enriches with author details, processes and validates the data, encrypts sensitive fields, and saves to JSONL files. It logs progress and counts for pages scraped, quotes parsed, authors fetched, and records saved.
+1. Generate Fernet key: `python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"`
+2. Copy `.env.example` to `.env`, set `FERNET_KEY` to the generated key
+3. Install: `pip install -r requirements.txt`
+4. Run: `python -m src.pipeline.run --max-pages 3 --output-dir data/processed`
 
 ## Testing
 
