@@ -18,7 +18,11 @@ Describe the modular architecture here.
 
 ## Data Flow
 
-Describe the data flow here.
+Data flows through the following stages:
+1. Scraping: Fetch quotes list pages and author detail pages
+2. Processing: Clean and normalize extracted data (whitespace normalization for text fields, lowercase unique tags, URL cleaning)
+3. Enrichment: Merge author details into quote records
+4. Storage: Save processed records to JSONL files
 
 ## Scraping Details
 
