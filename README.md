@@ -75,7 +75,11 @@ Output files:
 
 ## How to Run
 
-Steps to run the pipeline.
+1. Set up the environment: Copy `.env.example` to `.env` and set `FERNET_KEY`
+2. Install dependencies: `pip install -r requirements.txt`
+3. Run the pipeline: `python -m src.pipeline.run --max-pages 5 --output-dir data/processed`
+
+The pipeline scrapes quotes from https://quotes.toscrape.com, enriches with author details, processes and validates the data, encrypts sensitive fields, and saves to JSONL files. It logs progress and counts for pages scraped, quotes parsed, authors fetched, and records saved.
 
 ## Testing
 
