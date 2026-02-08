@@ -83,7 +83,7 @@ The pipeline scrapes quotes from https://quotes.toscrape.com, enriches with auth
 
 ## Testing
 
-Testing information.
+Run tests with `pytest -q`. Tests cover parsing quotes and author pages from sample HTML, and crypto encrypt/decrypt roundtrip (skipped if FERNET_KEY not set).
 
 ## Git History
 
